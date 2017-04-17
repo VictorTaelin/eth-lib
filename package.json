@@ -1,0 +1,25 @@
+{
+  "name": "ethfp",
+  "version": "0.1.0",
+  "description": "Lightweight, funcionally-oriented Ethereum libraries",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maiavictor/ethfp.git"
+  },
+  "keywords": [
+    "ethereum"
+  ],
+  "author": "Victor Maia",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maiavictor/ethfp/issues"
+  },
+  "homepage": "https://github.com/maiavictor/ethfp#readme",
+  "devDependencies": {
+    "rlp": "^2.0.0"
+  }
+}
