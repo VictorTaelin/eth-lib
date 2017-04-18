@@ -50,8 +50,8 @@ Type.String = {
   samp: ["\"foo\"", "\"the cake is real\"", "\"((λx.x x) (λx.x x))\"", "\"ಠ_ಠ\""]
 }
 
-Type.Data = {
-  name: "Data",
+Type.Bytes = {
+  name: "Bytes",
   repr: "any arbitrary data",
   form: "a JavaScript String starting with a `0x`, followed by an even number of low-case hex chars (i.e., `0123456789abcdef`)",
   samp: ['0x', '0x42', '0x17b3ff01', '0xa3b8ff96cc3d716a7b69d21104aa'],
@@ -85,11 +85,11 @@ Type.Struct = struct => {
   }
 }
 
-Type.FixedSizeData = bytes => ({
-  name: "(FixedSizeData " + bytes + ")",
+Type.NBytes = bytes => ({
+  name: "(NBytes " + bytes + ")",
   repr: "any arbitrary data of exactly " + bytes + "-byte" + (bytes > 1 ? "s" : ""),
   form: "a JavaScript String starting with a `0x`, followed by " + (bytes * 2) + " low-case hex chars (i.e., `0123456789abcdef`)",
-  test: value => Type.Data.test(value) && value.length === (bytes * 2 + 2),
+  test: value => Type.Bytes.test(value) && value.length === (bytes * 2 + 2),
   samp: ["0x" + debug.replicate(bytes, "01"), "0x" + debug.replicate(bytes, "3b"), "0x" + debug.replicate(bytes, "a7"), "0x" + debug.replicate(bytes, "ff")]
 })
 
@@ -114,9 +114,9 @@ Type.Address = {
 Type.PrivateKey = {
   name: "PrivateKey",
   repr: "an Ethereum private key",
-  form: Type.FixedSizeData(32).form,
-  test: Type.FixedSizeData(32).test,
-  samp: Type.FixedSizeData(32).samp
+  form: Type.NBytes(32).form,
+  test: Type.NBytes(32).test,
+  samp: Type.NBytes(32).samp
 }
 
 Type.Account = (() => {
@@ -132,3 +132,13 @@ Type.Account = (() => {
     samp: baseType.samp
   }
 })();
+
+Type.BytesTree = {
+  name: "BytesTree",
+  repr: "a tree of arbitrary binary data",
+  form: "either " + Type.Bytes.form + ", or a tree of nested JavaScript Arrays of BytesTrees",
+  test: value => Type.Bytes.test(value) || value instanceof Array && value.reduce((r,v) => Type.BytesTree.test(v) && r, true),
+  samp: ["[\"0x0011\", \"0x\", [\"0xff\", \"0xaabb\"]]", "\"0x0011223344\"", "[\"0x00\", [\"0x01\", [\"0x02\"], \"0x04\"], \"0x05\"]", "[]"]
+}
+
+module.exports = Type;

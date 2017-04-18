@@ -10,8 +10,11 @@
 //   | 192 to 247 | HEX(length_of_node + 192) + HEX(node)                                      |
 //   | 248 to 255 | HEX(length_of_length_of_node + 128 + 55) + HEX(length_of_node) + HEX(node) |
 
-// DataTree -> HexString
+const Type = require("./types.js");
+
 const encode = tree => {
+  Type.check(Type.BytesTree, tree);
+  
   const padEven = str =>
     str.length % 2 === 0 ? str : "0" + str;
 
@@ -36,8 +39,9 @@ const encode = tree => {
   return "0x" + dataTree(tree);
 }
 
-// HexString -> DataTree
 const decode = hex => {
+  Type.check(Type.Bytes, hex);
+
   let i = 2;
 
   const parseTree = () => {
