@@ -1,126 +1,99 @@
-const utils = require('web3-utils');
-const rlp = require('rlp');
-const elliptic = require('elliptic');
-const secp256k1 = new (elliptic.ec)('secp256k1'); // eslint-disable-line
+const Bytes = require("./bytes");
+const elliptic = require("elliptic");
+const rlp = require("./rlp");
+const secp256k1 = new (elliptic.ec)("secp256k1"); // eslint-disable-line
+const {keccak256, keccak256s} = require("./keccak");
 
-var extraUtils = {
-    stripZeros: function(buffer) {
-        for (var i = 0; i < buffer.length; i++) {
-            if (buffer[i] !== 0) {
-                break;
-            }
-        }
-        return i > 0 ? buffer.slice(i) : buffer;
-    },
-    numberToBuffer: function(number) {
-        var hex = utils.numberToHex(number).slice(2);
-        var paddedHex = hex.length % 2 ? '0' + hex : hex;
-        var bytes = utils.hexToBytes('0x' + paddedHex);
-        var buffer = new Buffer(bytes);
-        return extraUtils.stripZeros(buffer);
-    },
-    hexToBuffer: function(hex) {
-        return hex ? extraUtils.stripZeros(new Buffer(utils.hexToBytes(extraUtils.hexString(hex)))) : new Buffer([]);
-    },
-    addressToBuffer: function(address) {
-        return new Buffer(utils.hexToBytes(extraUtils.hexString(address, 20)));
-    },
-    hexString: function(string, bytes) {
-        if (typeof string !== 'string' || bytes && !new RegExp('^(0x)?[0-9a-fA-F]{'+(bytes*2)+'}$').test(string)) {
-            throw new Error('Type mismatch: expected ' + bytes + 'byte string, got ' + string);
-        }
-        return /^0x/.test(string) ? string : '0x' + string; 
-    },
-    publicToAddress: function(publicKey) {
-        var hash = utils.keccak256(new Buffer(publicKey.slice(2), 'hex'));
-        return utils.toChecksumAddress(hash.slice(-40));
-    },
+const create = entropy => {
+  const innerHex = keccak256(Bytes.concat(Bytes.random(32), entropy || Bytes.random(32)));
+  const middleHex = Bytes.concat(Bytes.concat(Bytes.random(32), innerHex), Bytes.random(32));
+  const outerHex = keccak256(middleHex);
+  return fromPrivate(outerHex);
+}
+
+const toChecksum = address => {
+  const addressHash = keccak256s(address.slice(2));
+  let checksumAddress = "0x";
+  for (let i = 0; i < 40; i++)
+    checksumAddress += parseInt(addressHash[i + 2], 16) > 7
+      ? address[i + 2].toUpperCase()
+      : address[i + 2];
+  return checksumAddress;
+}
+
+const fromPrivate = privateKey => {
+  const buffer = new Buffer(privateKey.slice(2), "hex");
+  const ecKey = secp256k1.keyFromPrivate(buffer);
+  const publicKey = "0x" + ecKey.getPublic(false, 'hex').slice(2);
+  const publicHash = keccak256(publicKey);
+  const address = toChecksum("0x" + publicHash.slice(-40));
+  return {
+    address: address,
+    privateKey: privateKey
+  }
+}
+
+const sign = (data, privateKey, chainId) => {
+  const hash = keccak256(data);
+  const signature = secp256k1
+    .keyFromPrivate(new Buffer(privateKey.slice(2), "hex"))
+    .sign(new Buffer(hash.slice(2), "hex"), {canonical: true});
+  return rlp.encode([
+    Bytes.fromNumber((chainId || 1) * 2 + 35 + signature.recoveryParam),
+    Bytes.fromBN("0x" + signature.r.toString(16)),
+    Bytes.fromBN("0x" + signature.s.toString(16))
+  ]);
 };
 
-function create(entropy) {
-    var innerHex = utils.keccak256(utils.randomHex(32) + (entropy || utils.randomHex(32)));
-    var middleHex = utils.randomHex(32) + innerHex + utils.randomHex(32);
-    var outerHex = utils.keccak256(middleHex);
-    return fromPrivate(outerHex);
-}
-
-function fromPrivate(privateKey) {
-    var buffer = new Buffer(extraUtils.hexString(privateKey, 32).slice(2), 'hex');
-    var ecKey = secp256k1.keyFromPrivate(buffer);
-    var publicKey = extraUtils.hexString(ecKey.getPublic(false, 'hex').slice(2), 64);
-    return {
-        address: extraUtils.publicToAddress(publicKey),
-        publicKey: publicKey,
-        privateKey: privateKey
-    }
-}
-
-// HexString, PrivateKey, Number -> Signature
-function sign(data, privateKey, chainId) {
-    var buffer = new Buffer(data.slice(2), 'hex');
-    var hash = new Buffer(utils.keccak256(buffer).slice(2), 'hex');
-    var signature = secp256k1
-        .keyFromPrivate(new Buffer(privateKey.slice(2), 'hex'))
-        .sign(hash, { canonical: true });
-    return '0x' + rlp.encode([
-        new Buffer([(chainId || 1) * 2 + 35 + signature.recoveryParam]),
-        extraUtils.numberToBuffer(signature.r),
-        extraUtils.numberToBuffer(signature.s)]).toString('hex');
-}
-
-// HexString, Signature -> Address
-function recover(data, signature) {
-    var buffer = new Buffer(data.slice(2), 'hex');
-    var hash = new Buffer(utils.keccak256(buffer).slice(2), "hex");
-    var vals = rlp.decode(new Buffer(signature.slice(2), 'hex'));
-    var v = utils.toBN(utils.bytesToHex(vals[0])).toNumber();
-    var r = utils.toBN(utils.bytesToHex(vals[1]));
-    var s = utils.toBN(utils.bytesToHex(vals[2]));
-    var ecPublicKey = secp256k1.recoverPubKey(hash, {r: r, s: s}, 1 - (v % 2));
-    var publicKey = extraUtils.hexString(ecPublicKey.encode('hex', false).slice(2), 64);
-    return extraUtils.publicToAddress(publicKey);
-}
-
-// Transaction, PrivateKey -> RawTransaction
-function signTransaction(tx, privateKey) {
-    var signingData = [
-        extraUtils.numberToBuffer(tx.nonce),
-        extraUtils.numberToBuffer(tx.gasPrice),
-        extraUtils.numberToBuffer(tx.gasLimit || tx.gas || 0),
-        extraUtils.addressToBuffer(tx.to),
-        extraUtils.numberToBuffer(tx.value),
-        extraUtils.hexToBuffer(tx.data),
-        extraUtils.numberToBuffer(tx.chainId || 1),
-        extraUtils.numberToBuffer(0),
-        extraUtils.numberToBuffer(0)];
-    var signingDataHex = '0x' + rlp.encode(signingData).toString('hex');
-    var signature = sign(signingDataHex, privateKey, tx.chainId);
-    var signatureValues = rlp.decode(new Buffer(signature.slice(2), 'hex'));
-    var rawTx = [].concat.call(signingData.slice(0,6), signatureValues);
-    return '0x' + rlp.encode(rawTx).toString('hex');
-}
-
-// RawTransaction -> Address
-function recoverTransaction(rawTx) {
-    var values = rlp.decode(new Buffer(extraUtils.hexString(rawTx).slice(2), 'hex'));
-    var signature = '0x' + rlp.encode(values.slice(6,9)).toString('hex');
-    var signingData = values.slice(0, 6).concat(values[6][0] < 35 ? [] : [
-        extraUtils.numberToBuffer(Math.floor((values[6][0] - 35) / 2)),
-        extraUtils.numberToBuffer(0),
-        extraUtils.numberToBuffer(0)]);
-    var signingDataHex = '0x' + rlp.encode(signingData).toString('hex');
-    return recover(signingDataHex, signature);
-}
-
-module.exports = {
-    create: create,
-    fromPrivate: fromPrivate,
-    sign: sign,
-    recover: recover,
-    signTransaction: signTransaction,
-    recoverTransaction: recoverTransaction,
-    secp256k1: secp256k1,
-    encrypt: null,
-    decrypt: null,
-    wallet: null
+const recover = (data, signature) => {
+  const hash = keccak256(data);
+  const vals = rlp.decode(signature);
+  const vrs = {v: Bytes.toNumber(vals[0]), r:vals[1].slice(2), s:vals[2].slice(2)};
+  const ecPublicKey = secp256k1.recoverPubKey(new Buffer(hash.slice(2), "hex"), vrs, 1 - (vrs.v % 2));
+  const publicKey = "0x" + ecPublicKey.encode("hex", false).slice(2);
+  const publicHash = keccak256(publicKey);
+  const address = toChecksum("0x" + publicHash.slice(-40));
+  return address;
 };
+
+const signTransaction = (tx, privateKey) => {
+  const signingData = [
+    Bytes.fromBN(tx.nonce),
+    Bytes.fromBN(tx.gasPrice),
+    Bytes.fromBN(tx.gasLimit),
+    tx.to.toLowerCase(),
+    Bytes.fromBN(tx.value),
+    tx.data,
+    Bytes.fromNumber(tx.chainId || 1),
+    "0x",
+    "0x"];
+  const signature = sign(rlp.encode(signingData), privateKey, tx.chainId);
+  const rawTransaction = signingData.slice(0,6).concat(rlp.decode(signature));
+  return rlp.encode(rawTransaction);
+};
+
+const recoverTransaction = (rawTransaction) => {
+  const values = rlp.decode(rawTransaction);
+  const signature = rlp.encode(values.slice(6,9));
+  const recovery = Bytes.toNumber(values[6]);
+  const extraData = recovery < 35 ? [] : [Bytes.fromNumber((recovery - 35) >> 1), "0x", "0x"]
+  const signingData = values.slice(0,6).concat(extraData);
+  const signingDataHex = rlp.encode(signingData);
+  return recover(signingDataHex, signature);
+}
+
+//var pvt = "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+//var acc = fromPrivate(pvt);
+//var tx = {nonce: "0x", gasPrice: "0x1000", gasLimit: "0x1000", to: acc.address, value: "0x1000", data: "0xdeadbeef"};
+//var raw = signTransaction(tx, acc.privateKey);
+//var rec = recoverTransaction(raw);
+
+module.exports = { 
+  create,
+  toChecksum,
+  fromPrivate,
+  sign,
+  recover,
+  signTransaction,
+  recoverTransaction
+}

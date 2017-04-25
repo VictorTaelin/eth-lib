@@ -1,7 +1,11 @@
 const rnd = require("./randomData.js");
 const rlp = require("./../../src/rlp.js");
 const ref = {rlp: require("rlp")};
-const {callsPerSecond: cps} = require("./../../src/debug.js");
+const cps = f => {
+  for (var t = Date.now(), i = 0; Date.now() - t < 1000; ++i)
+    f();
+  return i;
+};
 
 let dataTrees = [];
 for (let i = 0; i < 64; ++i)

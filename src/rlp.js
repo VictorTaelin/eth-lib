@@ -1,20 +1,14 @@
 // The RLP format
-// - Just a different name for `data DataTree = Leaf HexString | Node (Array HexString)`
-// - Represented as nested JS hex string arrays, like `["0xabcd", ["0x0102", "0x42"], ...]`
-// - Serialized as a single hex string under the following grammar:
-//   | First byte | Meaning                                                                    |
-//   | ---------- | -------------------------------------------------------------------------- |
-//   | 0   to 127 | HEX(leaf)                                                                  |
-//   | 128 to 183 | HEX(length_of_leaf + 128) + HEX(leaf)                                      |
-//   | 184 to 191 | HEX(length_of_length_of_leaf + 128 + 55) + HEX(length_of_leaf) + HEX(leaf) |
-//   | 192 to 247 | HEX(length_of_node + 192) + HEX(node)                                      |
-//   | 248 to 255 | HEX(length_of_length_of_node + 128 + 55) + HEX(length_of_node) + HEX(node) |
-
-const Type = require("./types.js");
+// Serialization and deserialization for the BytesTree type, under the following grammar:
+// | First byte | Meaning                                                                    |
+// | ---------- | -------------------------------------------------------------------------- |
+// | 0   to 127 | HEX(leaf)                                                                  |
+// | 128 to 183 | HEX(length_of_leaf + 128) + HEX(leaf)                                      |
+// | 184 to 191 | HEX(length_of_length_of_leaf + 128 + 55) + HEX(length_of_leaf) + HEX(leaf) |
+// | 192 to 247 | HEX(length_of_node + 192) + HEX(node)                                      |
+// | 248 to 255 | HEX(length_of_length_of_node + 128 + 55) + HEX(length_of_node) + HEX(node) |
 
 const encode = tree => {
-  Type.check(Type.BytesTree, tree);
-  
   const padEven = str =>
     str.length % 2 === 0 ? str : "0" + str;
 
@@ -37,18 +31,17 @@ const encode = tree => {
   }
 
   return "0x" + dataTree(tree);
-}
+};
 
 const decode = hex => {
-  Type.check(Type.Bytes, hex);
-
   let i = 2;
 
   const parseTree = () => {
+    if (i >= hex.length) throw "";
     const head = hex.slice(i,i+2);
     return head < "80" ? (i+=2, "0x" + head)
-         : head < "c0" ? parseHex()
-         : parseList();
+        : head < "c0" ? parseHex()
+        : parseList();
   }
 
   const parseLength = () => {
@@ -69,7 +62,11 @@ const decode = hex => {
     return list;
   }
 
-  return parseTree();
-}
+  try {
+    return parseTree();
+  } catch (e) {
+    return [];
+  }
+};
 
 module.exports = {encode, decode};

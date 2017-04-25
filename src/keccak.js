@@ -333,7 +333,8 @@ const keccak = bits => str => {
 }
 
 module.exports = {
-  keccak,
   keccak256: keccak(256),
-  keccak512: keccak(512)
+  keccak512: keccak(512),
+  keccak256s: keccak(256),
+  keccak512s: keccak(512),
 }

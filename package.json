@@ -20,6 +20,12 @@
   },
   "homepage": "https://github.com/maiavictor/ethfp#readme",
   "devDependencies": {
-    "rlp": "^2.0.0"
+    "rlp": "^2.0.0",
+    "ethjs-account": "^0.1.1",
+    "ethjs-signer": "^0.1.1"
+  },
+  "dependencies": {
+    "bn.js": "^4.11.6",
+    "forall": "^0.1.1"
   }
 }
