@@ -82,12 +82,6 @@ const recoverTransaction = (rawTransaction) => {
   return recover(signingDataHex, signature);
 }
 
-//var pvt = "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-//var acc = fromPrivate(pvt);
-//var tx = {nonce: "0x", gasPrice: "0x1000", gasLimit: "0x1000", to: acc.address, value: "0x1000", data: "0xdeadbeef"};
-//var raw = signTransaction(tx, acc.privateKey);
-//var rec = recoverTransaction(raw);
-
 module.exports = { 
   create,
   toChecksum,

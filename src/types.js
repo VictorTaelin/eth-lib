@@ -11,7 +11,7 @@ F.Bytes = F(F.Type, {
 
 F.NBytes = bytes => F(F.Type, {
   form: "a JavaScript String starting with a `0x`, followed by " + (bytes * 2) + " low-case hex chars (i.e., `0123456789abcdef`)",
-  test: value => Bytes.test(value) && value.length === (bytes * 2 + 2),
+  test: value => F.Bytes.test(value) && value.length === (bytes * 2 + 2),
   rand: () => "0x" + A.generate(bytes * 2, () => (Math.random() * 16 | 0).toString(16)).join("")
 })
 .__name("NBytes(" + bytes + ")")
@@ -27,7 +27,7 @@ F.BigNum = F(F.Type, {
 
 F.Address = F(F.Type, {
   form: "a JavaScript String starting with a `0x`, followed by 40 hex chars (i.e., `0123456789abcdefABCDEF`), with the nth hex being uppercase iff the nth hex of the keccak256 of the lowercase address in ASCII is > 7",
-  test: address => /^(0x)?[0-9a-f]{40}$/i.test(address) && Account.toChecksum(address) === address,
+  test: address => /^(0x)?[0-9a-f]{40}$/i.test(address) && Account.toChecksum(address.toLowerCase()) === address,
   rand: () => F.Account.rand().address
 })
 .__name("Address")
