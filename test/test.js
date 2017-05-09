@@ -5,6 +5,7 @@ const ref = {rlp: require("rlp")};
 const F = require("./../src/types.js");
 const Nat = require("./../src/Nat.js");
 const Account = require("./../src/account.js");
+const keccak256 = require("./../src/hash.js").keccak256;
 const ethjs = {
   signer: require("ethjs-signer"),
   account: require("ethjs-account")};
@@ -39,7 +40,7 @@ describe("RLP", () => {
 describe("account", function () {
   it("must recover the same address that signed", () => {
     F.forall([F.Account, F.Bytes], (acc, msg) =>
-      Account.recover(msg, Account.sign(msg, acc.privateKey, "0x1")) === acc.address,
+      Account.recover(keccak256(msg), Account.sign(keccak256(msg), acc.privateKey, "0x1")) === acc.address,
       32);
   });
 

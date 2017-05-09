@@ -34,8 +34,7 @@ const fromPrivate = privateKey => {
   }
 }
 
-const sign = (data, privateKey, chainId) => {
-  const hash = keccak256(data);
+const sign = (hash, privateKey, chainId) => {
   const signature = secp256k1
     .keyFromPrivate(new Buffer(privateKey.slice(2), "hex"))
     .sign(new Buffer(hash.slice(2), "hex"), {canonical: true});
@@ -46,8 +45,7 @@ const sign = (data, privateKey, chainId) => {
   ]);
 };
 
-const recover = (data, signature) => {
-  const hash = keccak256(data);
+const recover = (hash, signature) => {
   const vals = rlp.decode(signature);
   const vrs = {v: Bytes.toNumber(vals[0]), r:vals[1].slice(2), s:vals[2].slice(2)};
   const ecPublicKey = secp256k1.recoverPubKey(new Buffer(hash.slice(2), "hex"), vrs, 1 - (vrs.v % 2));
@@ -71,7 +69,7 @@ const transactionSigningData = tx =>
 
 const signTransaction = (tx, privateKey) => {
   const signingData = transactionSigningData(tx);
-  const signature = sign(signingData, privateKey, tx.chainId);
+  const signature = sign(keccak256(signingData), privateKey, tx.chainId);
   const rawTransaction = rlp.decode(signingData).slice(0,6).concat(rlp.decode(signature));
   return rlp.encode(rawTransaction);
 };
@@ -83,7 +81,7 @@ const recoverTransaction = (rawTransaction) => {
   const extraData = recovery < 35 ? [] : [Bytes.fromNumber((recovery - 35) >> 1), "0x", "0x"]
   const signingData = values.slice(0,6).concat(extraData);
   const signingDataHex = rlp.encode(signingData);
-  return recover(signingDataHex, signature);
+  return recover(keccak256(signingDataHex), signature);
 }
 
 module.exports = { 
