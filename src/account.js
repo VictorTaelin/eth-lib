@@ -97,5 +97,7 @@ module.exports = {
   recover,
   signTransaction,
   recoverTransaction,
-  transactionSigningData
+  transactionSigningData,
+  encodeSignature,
+  decodeSignature
 }
