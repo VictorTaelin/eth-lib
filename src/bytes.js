@@ -28,6 +28,12 @@ const concat = (a, b) =>
 const flatten = (a) =>
   "0x" + a.reduce((r,s) => r + s.slice(2), "");
 
+const slice = (i,j,bs) =>
+  "0x" + bs.slice(i+2,j+2);
+
+const pad = (b,l,hex) =>
+  hex.length === l + 2 ? hex : pad(b,l,"0x"+b.slice(2)+hex.slice(2));
+
 const fromNat = bn =>
   bn.length % 2 === 0 ? bn : "0x0" + bn.slice(2);
 
@@ -38,6 +44,8 @@ module.exports = {
   random,
   concat,
   flatten,
+  slice,
+  pad,
   fromNumber,
   toNumber,
   fromNat,
