@@ -3,7 +3,7 @@ const rnd = require("./lib/randomData.js");
 const rlp = require("./../src/rlp.js");
 const ref = {rlp: require("rlp")};
 const F = require("./../src/types.js");
-const BN = require("./../src/BN.js");
+const Nat = require("./../src/Nat.js");
 const Account = require("./../src/account.js");
 const ethjs = {
   signer: require("ethjs-signer"),
@@ -39,7 +39,7 @@ describe("RLP", () => {
 describe("account", function () {
   it("must recover the same address that signed", () => {
     F.forall([F.Account, F.Bytes], (acc, msg) =>
-      Account.recover(msg, Account.sign(msg, acc.privateKey, 1)) === acc.address,
+      Account.recover(msg, Account.sign(msg, acc.privateKey, "0x1")) === acc.address,
       32);
   });
 
@@ -60,11 +60,11 @@ describe("account", function () {
         "transactions": [
           {
             "object": {
-              "nonce": BN.fromString("9"),
-              "gasPrice": BN.fromString("20000000000"),
-              "gasLimit": BN.fromString("21000"),
+              "nonce": Nat.fromString("9"),
+              "gasPrice": Nat.fromString("20000000000"),
+              "gasLimit": Nat.fromString("21000"),
               "to": '0x3535353535353535353535353535353535353535',
-              "value": BN.fromString("1000000000000000000"),
+              "value": Nat.fromString("1000000000000000000"),
               "data": "0x"
             },
             "signature": "0xf86c098504a817c800825208943535353535353535353535353535353535353535880de0b6b3a76400008025a028ef61340bd939bc2195fe537567866003e1a15d3c71ff63e1590620aa636276a067cbe9d8997f761aecb703304b3800ccf555c9f3dc64214b297fb1966a3b6d83"
@@ -78,11 +78,11 @@ describe("account", function () {
         "transactions": [
           {
             "object": {
-              "nonce": BN.fromString("0"),
-              "gasPrice": BN.fromString("230000000000"),
-              "gasLimit": BN.fromString("21000"),
+              "nonce": Nat.fromString("0"),
+              "gasPrice": Nat.fromString("230000000000"),
+              "gasLimit": Nat.fromString("21000"),
               "to": '0xFCAd0B19bB29D4674531d6f115237E16AfCE377c',
-              "value": BN.fromString("1000000000000000000"),
+              "value": Nat.fromString("1000000000000000000"),
               "data": "0x0123abcd"
             },
             "signature": "0xf8708085358d117c0082520894fcad0b19bb29d4674531d6f115237e16afce377c880de0b6b3a7640000840123abcd25a032dbcf46a64b9892df24d8b961d2a52fd66b1dabd3a0d96940fd6795c01d8711a01b86df9475de7451554557d87b69456e3fa95aa5375584bf63d1ffd647a225d9",

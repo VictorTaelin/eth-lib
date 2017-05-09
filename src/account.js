@@ -1,4 +1,5 @@
 const Bytes = require("./bytes");
+const Nat = require("./nat");
 const elliptic = require("elliptic");
 const rlp = require("./rlp");
 const secp256k1 = new (elliptic.ec)("secp256k1"); // eslint-disable-line
@@ -39,9 +40,9 @@ const sign = (data, privateKey, chainId) => {
     .keyFromPrivate(new Buffer(privateKey.slice(2), "hex"))
     .sign(new Buffer(hash.slice(2), "hex"), {canonical: true});
   return rlp.encode([
-    Bytes.fromNumber((chainId || 1) * 2 + 35 + signature.recoveryParam),
-    Bytes.fromBN("0x" + signature.r.toString(16)),
-    Bytes.fromBN("0x" + signature.s.toString(16))
+    Bytes.fromNumber((Nat.toNumber(chainId || "0x1") || 1) * 2 + 35 + signature.recoveryParam),
+    Bytes.fromNat("0x" + signature.r.toString(16)),
+    Bytes.fromNat("0x" + signature.s.toString(16))
   ]);
 };
 
@@ -56,19 +57,22 @@ const recover = (data, signature) => {
   return address;
 };
 
-const signTransaction = (tx, privateKey) => {
-  const signingData = [
-    Bytes.fromBN(tx.nonce),
-    Bytes.fromBN(tx.gasPrice),
-    Bytes.fromBN(tx.gasLimit),
+const transactionSigningData = tx =>
+  rlp.encode([
+    Bytes.fromNat(tx.nonce),
+    Bytes.fromNat(tx.gasPrice),
+    Bytes.fromNat(tx.gasLimit),
     tx.to.toLowerCase(),
-    Bytes.fromBN(tx.value),
+    Bytes.fromNat(tx.value),
     tx.data,
-    Bytes.fromNumber(tx.chainId || 1),
+    Bytes.fromNat(tx.chainId || "0x1"),
     "0x",
-    "0x"];
-  const signature = sign(rlp.encode(signingData), privateKey, tx.chainId);
-  const rawTransaction = signingData.slice(0,6).concat(rlp.decode(signature));
+    "0x"]);
+
+const signTransaction = (tx, privateKey) => {
+  const signingData = transactionSigningData(tx);
+  const signature = sign(signingData, privateKey, tx.chainId);
+  const rawTransaction = rlp.decode(signingData).slice(0,6).concat(rlp.decode(signature));
   return rlp.encode(rawTransaction);
 };
 
@@ -89,5 +93,6 @@ module.exports = {
   sign,
   recover,
   signTransaction,
-  recoverTransaction
+  recoverTransaction,
+  transactionSigningData
 }

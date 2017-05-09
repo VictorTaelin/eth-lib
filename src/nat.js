@@ -11,7 +11,10 @@ const fromString = str => {
     ? new BN(str.slice(2), 16)
     : new BN(str, 10)).toString("hex");
   return bn === "0x0" ? "0x" : bn;
-};
+}
+
+const toNumber = a =>
+  toBN(a).toNumber();
 
 const bin = method => (a, b) =>
   fromBN(toBN(a)[method](toBN(b)));
@@ -23,6 +26,7 @@ const sub = bin("sub");
 
 module.exports = {
   fromString,
+  toNumber,
   add,
   mul,
   div,

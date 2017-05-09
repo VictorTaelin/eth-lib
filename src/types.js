@@ -17,12 +17,12 @@ F.NBytes = bytes => F(F.Type, {
 .__name("NBytes(" + bytes + ")")
 .__desc("any arbitrary data of exactly " + bytes + "-byte" + (bytes > 1 ? "s" : ""));
 
-F.BigNum = F(F.Type, {
+F.Nat = F(F.Type, {
   form: "a JavaScript String starting with a `0x`, followed by at least one low-case hex char different from 0, followed by any number of low-case hex chars (i.e., `0123456789abcdef`)",
   test: value => typeof value === "string" && /^0x[1-9a-f]([0-9a-f])*$/.test(value),
   rand: () => "0x" + (Math.random() * Math.pow(2,50) | 0).toString(16)
 })
-.__name("BigNum")
+.__name("Nat")
 .__desc("an arbitrarily long non-negative integer number");
 
 F.Address = F(F.Type, {

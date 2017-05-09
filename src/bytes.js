@@ -28,10 +28,10 @@ const concat = (a, b) =>
 const flatten = (a) =>
   "0x" + a.reduce((r,s) => r + s.slice(2), "");
 
-const fromBN = bn =>
+const fromNat = bn =>
   bn.length % 2 === 0 ? bn : "0x0" + bn.slice(2);
 
-const toBN = bn =>
+const toNat = bn =>
   bn[2] === "0" ? "0x" + bn.slice(3) : bn;
 
 module.exports = {
@@ -40,6 +40,6 @@ module.exports = {
   flatten,
   fromNumber,
   toNumber,
-  fromBN,
-  toBN
+  fromNat,
+  toNat
 }
