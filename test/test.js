@@ -40,7 +40,7 @@ describe("RLP", () => {
 describe("account", function () {
   it("must recover the same address that signed", () => {
     F.forall([F.Account, F.Bytes], (acc, msg) =>
-      Account.recover(keccak256(msg), Account.sign(keccak256(msg), acc.privateKey, "0x1")) === acc.address,
+      Account.recover(keccak256(msg), Account.sign(keccak256(msg), acc.privateKey, 0)) === acc.address,
       32);
   });
 

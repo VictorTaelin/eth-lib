@@ -40,20 +40,22 @@ const encodeSignature = ([v, r, s]) =>
 const decodeSignature = (hex) =>
   [Bytes.slice(128,130,hex), Bytes.slice(0,64,hex), Bytes.slice(64,128,hex)];
 
-const sign = (hash, privateKey, chainId) => {
+const makeSign = addToV => (hash, privateKey) => {
   const signature = secp256k1
     .keyFromPrivate(new Buffer(privateKey.slice(2), "hex"))
     .sign(new Buffer(hash.slice(2), "hex"), {canonical: true});
   return encodeSignature([
-    Bytes.fromNumber((Nat.toNumber(chainId || "0x1") || 1) * 2 + 35 + signature.recoveryParam),
-    Bytes.pad("0x0", 64, Bytes.fromNat("0x" + signature.r.toString(16))),
-    Bytes.pad("0x0", 64, Bytes.fromNat("0x" + signature.s.toString(16)))]);
+    Bytes.pad("0x0", 1, Bytes.fromNumber(addToV + signature.recoveryParam)),
+    Bytes.pad("0x0", 32, Bytes.fromNat("0x" + signature.r.toString(16))),
+    Bytes.pad("0x0", 32, Bytes.fromNat("0x" + signature.s.toString(16)))]);
 }
+
+const sign = makeSign(27); // v=27|28 instead of 0|1...
 
 const recover = (hash, signature) => {
   const vals = decodeSignature(signature);
   const vrs = {v: Bytes.toNumber(vals[0]), r:vals[1].slice(2), s:vals[2].slice(2)};
-  const ecPublicKey = secp256k1.recoverPubKey(new Buffer(hash.slice(2), "hex"), vrs, 1 - (vrs.v % 2));
+  const ecPublicKey = secp256k1.recoverPubKey(new Buffer(hash.slice(2), "hex"), vrs, vrs.v < 2 ? vrs.v : 1 - (vrs.v % 2)); // because odd vals mean v=0... sadly that means v=0 means v=1... I hate that
   const publicKey = "0x" + ecPublicKey.encode("hex", false).slice(2);
   const publicHash = keccak256(publicKey);
   const address = toChecksum("0x" + publicHash.slice(-40));
@@ -74,7 +76,7 @@ const transactionSigningData = tx =>
 
 const signTransaction = (tx, privateKey) => {
   const signingData = transactionSigningData(tx);
-  const signature = sign(keccak256(signingData), privateKey, tx.chainId);
+  const signature = makeSign(Nat.toNumber(tx.chainId || "0x1") * 2 + 35)(keccak256(signingData), privateKey);
   const rawTransaction = rlp.decode(signingData).slice(0,6).concat(decodeSignature(signature));
   return rlp.encode(rawTransaction);
 }
