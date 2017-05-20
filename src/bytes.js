@@ -31,8 +31,8 @@ const flatten = (a) =>
 const slice = (i,j,bs) =>
   "0x" + bs.slice(i+2,j+2);
 
-const pad = (b,l,hex) =>
-  hex.length === l*2+2 ? hex : pad(b,l,"0x"+b.slice(2)+hex.slice(2));
+const pad = (l,hex) =>
+  hex.length === l*2+2 ? hex : pad(l,"0x"+"0"+hex.slice(2));
 
 const fromNat = bn =>
   bn.length % 2 === 0 ? bn : "0x0" + bn.slice(2);

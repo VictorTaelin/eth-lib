@@ -45,9 +45,9 @@ const makeSign = addToV => (hash, privateKey) => {
     .keyFromPrivate(new Buffer(privateKey.slice(2), "hex"))
     .sign(new Buffer(hash.slice(2), "hex"), {canonical: true});
   return encodeSignature([
-    Bytes.pad("0x0", 1, Bytes.fromNumber(addToV + signature.recoveryParam)),
-    Bytes.pad("0x0", 32, Bytes.fromNat("0x" + signature.r.toString(16))),
-    Bytes.pad("0x0", 32, Bytes.fromNat("0x" + signature.s.toString(16)))]);
+    Bytes.pad(1, Bytes.fromNumber(addToV + signature.recoveryParam)),
+    Bytes.pad(32, Bytes.fromNat("0x" + signature.r.toString(16))),
+    Bytes.pad(32, Bytes.fromNat("0x" + signature.s.toString(16)))]);
 }
 
 const sign = makeSign(27); // v=27|28 instead of 0|1...
