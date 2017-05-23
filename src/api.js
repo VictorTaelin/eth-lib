@@ -50,7 +50,7 @@ const Api = provider => {
     abi.forEach(method =>
       contract[method.name] = (...params) => 
         (method.constant ? callWithDefaults : sendTransactionWithDefaults)
-        ({from: from, to: address, data: callMethodData(method)(...params)}));
+        ({from: from, to: address, data: callMethodData(method)(...params.map(p => Bytes.pad(32,p)))}));
     return contract;
   }
 

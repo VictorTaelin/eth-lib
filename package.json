@@ -1,6 +1,6 @@
 {
   "name": "ethfp",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Lightweight, funcionally-oriented Ethereum libraries",
   "main": "src/index.js",
   "scripts": {
@@ -29,6 +29,7 @@
     "elliptic": "^6.4.0",
     "forall": "^0.1.1",
     "fpl": "^0.1.5",
+    "nano-json-stream-parser": "^0.1.2",
     "reqwest": "^2.0.5",
     "xhr2": "^0.1.4"
   }
