@@ -63,7 +63,7 @@ describe("account", function () {
             "object": {
               "nonce": Nat.fromString("9"),
               "gasPrice": Nat.fromString("20000000000"),
-              "gasLimit": Nat.fromString("21000"),
+              "gas": Nat.fromString("21000"),
               "to": '0x3535353535353535353535353535353535353535',
               "value": Nat.fromString("1000000000000000000"),
               "data": "0x"
@@ -81,7 +81,7 @@ describe("account", function () {
             "object": {
               "nonce": Nat.fromString("0"),
               "gasPrice": Nat.fromString("230000000000"),
-              "gasLimit": Nat.fromString("21000"),
+              "gas": Nat.fromString("21000"),
               "to": '0xFCAd0B19bB29D4674531d6f115237E16AfCE377c',
               "value": Nat.fromString("1000000000000000000"),
               "data": "0x0123abcd"

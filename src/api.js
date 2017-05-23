@@ -27,7 +27,7 @@ const Api = provider => {
     .then(tx =>
       send("eth_estimateGas")(tx)
         .then(usedGas => Obj.merge(tx)({
-          gasLimit: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
+          gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
         })));
 
   const sendTransactionWithDefaults = tx =>

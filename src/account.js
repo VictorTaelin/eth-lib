@@ -66,7 +66,7 @@ const transactionSigningData = tx =>
   rlp.encode([
     Bytes.fromNat(tx.nonce),
     Bytes.fromNat(tx.gasPrice),
-    Bytes.fromNat(tx.gasLimit),
+    Bytes.fromNat(tx.gas),
     tx.to.toLowerCase(),
     Bytes.fromNat(tx.value),
     tx.data,
