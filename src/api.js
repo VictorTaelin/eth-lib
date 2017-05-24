@@ -1,6 +1,6 @@
 const Api = provider => {
   const Nat = require("./nat");
-  const Obj = require("fpl/object");
+  const Obj = require("fpl/Object");
   const Bytes = require("./bytes");
   const keccak256s = require("./hash").keccak256s;
 

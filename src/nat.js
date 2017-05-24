@@ -1,4 +1,4 @@
-const BN = require("BN.js");
+const BN = require("bn.js");
 const Bytes = require("./bytes");
 
 const fromBN = bn =>
