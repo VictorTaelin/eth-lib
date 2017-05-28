@@ -22,7 +22,7 @@ const EthereumProvider = url => {
   }
 
   if (/^ws/.test(url)) {
-    const WebSocket = require("ws");
+    const WebSocket = require("w"+"s");
     const ws = new WebSocket(url);
     api.send = (method, params, callback) => {
       const payload = genPayload(method, params);

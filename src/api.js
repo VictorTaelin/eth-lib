@@ -19,16 +19,17 @@ const Api = provider => {
     Promise.all([
       tx.chainId || send("net_version")(),
       tx.gasPrice || send("eth_gasPrice")(),
-      tx.nonce || send("eth_getTransactionCount")(tx.from),
+      tx.nonce || send("eth_getTransactionCount")(tx.from,"latest"),
       tx.value || "0x",
       tx.data || "0x"])
     .then(([chainId, gasPrice, nonce, value, data]) =>
-      Obj.merge(tx)({chainId, gasPrice, nonce, value, data}))
+      Obj.merge(tx)({chainId: "0x"+chainId, gasPrice, nonce, value, data}))
     .then(tx =>
       send("eth_estimateGas")(tx)
         .then(usedGas => Obj.merge(tx)({
-          gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
-        })));
+          gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x30"),"0x5"),
+          gas: Nat.div(Nat.mul(usedGas,"0x30"),"0x5")
+        })))
 
   const sendTransactionWithDefaults = tx =>
     addTransactionDefaults(tx)
@@ -47,10 +48,16 @@ const Api = provider => {
     let contract = {};
     contract._address = address;
     contract._from = from;
-    abi.forEach(method =>
-      contract[method.name] = (...params) => 
-        (method.constant ? callWithDefaults : sendTransactionWithDefaults)
-        ({from: from, to: address, data: callMethodData(method)(...params.map(p => Bytes.pad(32,p)))}));
+    abi.forEach(method => contract[method.name] = (...params) => {
+      const transaction = {
+        from: from,
+        to: address,
+        data: callMethodData(method)(...params.map(p => Bytes.pad(32,p)))
+      };
+      return method.constant
+        ? callWithDefaults(transaction)
+        : sendTransactionWithDefaults(transaction).then(getTransactionReceipt);
+    });
     return contract;
   }
 
@@ -74,10 +81,15 @@ const Api = provider => {
           .then(getTransactionReceipt)
           .then(receipt => contract(from, receipt.contractAddress, abi)));
 
+  const getBalance = send("eth_getBalance");
+  const accounts = send("eth_accounts");
+
   return {
     send,
     sendTransaction,
     sendTransactionWithDefaults,
+    getBalance,
+    accounts,
     sendRawTransaction,
     getTransactionReceipt,
     addTransactionDefaults,
