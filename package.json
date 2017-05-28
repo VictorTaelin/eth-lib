@@ -1,6 +1,6 @@
 {
   "name": "ethfp",
-  "version": "0.1.18",
+  "version": "0.1.20",
   "description": "Lightweight, funcionally-oriented Ethereum libraries",
   "main": "src/index.js",
   "scripts": {

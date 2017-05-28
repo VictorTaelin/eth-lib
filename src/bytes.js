@@ -19,6 +19,20 @@ const fromNumber = num => {
   return hex.length % 2 === 0 ? "0x" + hex : "0x0" + hex ;
 };
 
+const fromAscii = ascii => {
+  let hex = "0x";
+  for (let i = 0; i < ascii.length; ++i)
+    hex += ("00" + ascii.charCodeAt(i).toString(16)).slice(-2);
+  return hex;
+};
+
+const toAscii = hex => {
+  let ascii = "";
+  for (let i = 2; i < hex.length; i += 2)
+    ascii += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16));
+  return ascii;
+};
+
 const toNumber = hex => 
   parseInt(hex.slice(2), 16);
 
@@ -46,6 +60,8 @@ module.exports = {
   flatten,
   slice,
   pad,
+  fromAscii,
+  toAscii,
   fromNumber,
   toNumber,
   fromNat,
