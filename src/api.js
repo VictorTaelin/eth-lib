@@ -20,7 +20,7 @@ const Api = provider => {
       tx.chainId || send("net_version")(),
       tx.gasPrice || send("eth_gasPrice")(),
       tx.nonce || send("eth_getTransactionCount")(tx.from,"latest"),
-      tx.value || "0x",
+      tx.value || "0x0",
       tx.data || "0x"])
     .then(([chainId, gasPrice, nonce, value, data]) =>
       Obj.merge(tx)({chainId: "0x"+chainId, gasPrice, nonce, value, data}))
