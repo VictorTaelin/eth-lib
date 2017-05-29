@@ -35,9 +35,9 @@ const Api = provider => {
     addTransactionDefaults(tx)
       .then(sendTransaction);
 
-  const callWithDefaults = tx =>
+  const callWithDefaults = (tx, block) =>
     addTransactionDefaults(tx)
-      .then(call);
+      .then(tx => call(tx, block || "latest"));
 
   const callMethodData = method => (...params) => {
     const methodSig = method.name + "(" + method.inputs.map(i => i.type).join(",") + ")";
