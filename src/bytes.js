@@ -2,10 +2,10 @@ const A = require("./array.js");
 
 const random = bytes => {
   let rnd;
-  if (typeof window !== "undefined" && window.getRandomValues)
-    rnd = window.getRandomValues(new Uint8Array(bytes));
+  if (typeof window !== "undefined" && window.crypto && window.crypto.getRandomValues)
+    rnd = window.crypto.getRandomValues(new Uint8Array(bytes));
   else if (typeof require !== "undefined")
-    rnd = require("" + "crypto").randomBytes(bytes);
+    rnd = require("c" + "rypto").randomBytes(bytes);
   else
     throw "Safe random numbers not available.";
   let hex = "0x";
