@@ -14,6 +14,16 @@ const random = bytes => {
   return hex;
 };
 
+const toArray = hex => {
+  let arr = [];
+  for (let i = 2, l = hex.length; i < l; i += 2)
+    arr.push(parseInt(hex.slice(i, i + 2), 16));
+  return arr;
+}
+
+const fromArray = arr => 
+  "0x" + arr.map(b => ("00" + b.toString(16)).slice(-2)).join("");
+
 const fromNumber = num => {
   let hex = num.toString(16);
   return hex.length % 2 === 0 ? "0x" + hex : "0x0" + hex ;
@@ -65,5 +75,7 @@ module.exports = {
   fromNumber,
   toNumber,
   fromNat,
-  toNat
+  toNat,
+  fromArray,
+  toArray
 }

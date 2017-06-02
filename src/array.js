@@ -19,9 +19,17 @@ const flatten = (a) => {
   return r;
 }
 
+const chunksOf = (n,a) => {
+  let b = [];
+  for (let i = 0, l = a.length; i < l; i += n)
+    b.push(a.slice(i, i + n));
+  return b;
+}
+
 module.exports = {
   generate,
   replicate,
   concat,
-  flatten
+  flatten,
+  chunksOf
 }

@@ -5,5 +5,6 @@ module.exports = {
   Hash: require("./hash.js"),
   RLP: require("./rlp.js"),
   Api: require("./api.js"),
-  Provider: require("./provider.js")
+  Provider: require("./provider.js"),
+  Sunseed: require("./sunseed.js")
 }
