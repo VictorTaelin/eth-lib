@@ -1,14 +1,14 @@
 {
-  "name": "ethfp",
-  "version": "0.1.24",
-  "description": "Lightweight, funcionally-oriented Ethereum libraries",
+  "name": "eth-lib",
+  "version": "0.1.1",
+  "description": "Lightweight Ethereum libraries",
   "main": "src/index.js",
   "scripts": {
     "test": "mocha test/test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/maiavictor/ethfp.git"
+    "url": "git+https://github.com/maiavictor/eth-lib.git"
   },
   "keywords": [
     "ethereum"
@@ -16,19 +16,18 @@
   "author": "Victor Maia",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/maiavictor/ethfp/issues"
+    "url": "https://github.com/maiavictor/eth-lib/issues"
   },
-  "homepage": "https://github.com/maiavictor/ethfp#readme",
+  "homepage": "https://github.com/maiavictor/eth-lib#readme",
   "devDependencies": {
     "rlp": "^2.0.0",
     "ethjs-account": "^0.1.1",
-    "ethjs-signer": "^0.1.1"
+    "ethjs-signer": "^0.1.1",
+    "forall": "^0.1.1"
   },
   "dependencies": {
     "bn.js": "^4.11.6",
     "elliptic": "^6.4.0",
-    "forall": "^0.1.1",
-    "fpl": "^0.1.5",
     "nano-json-stream-parser": "^0.1.2",
     "reqwest": "^2.0.5",
     "ws": "^3.0.0",

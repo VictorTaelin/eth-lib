@@ -42,7 +42,6 @@ const b64sToBytes = b64s => {
   let bytes = [];
   for (let i = 0, l = Math.floor(b64s.length * 6 / 8); i < l; ++i) {
     let j = i / 6 * 8 | 0;
-    //bytes.push(((b64s[j+0] & Math.pow(4, 3-i%3) - 1) << (i%3*2+2)) + (b64s[j+1] >>> (4 - i % 3 * 2)));
     bytes.push
       ( i % 3 === 0 ? b64s[j+0] % 64 *  4 + (b64s[j+1] / 16 | 0)
       : i % 3 === 1 ? b64s[j+0] % 16 * 16 + (b64s[j+1] /  4 | 0)
@@ -61,8 +60,3 @@ module.exports = {
   fromBytes,
   toBytes
 }
-
-
-
-
-
