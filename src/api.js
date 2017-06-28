@@ -47,12 +47,13 @@ const Api = provider => {
     return Bytes.concat(keccak256s(methodSig).slice(0,10), Bytes.flatten(params));
   }
 
-  const contract = (from, address, abi) => {
+  // Address, Address, AbiDefinition -> Contract
+  const contract = (from, address, abiDefinition) => {
     let contract = {};
     contract._address = address;
     contract._from = from;
     contract.broadcast = {};
-    abi.forEach(method => {
+    abiDefinition.forEach(method => {
       if (method && method.name) {
         const call = (waitReceipt, value) => (...params) => {
           const transaction = {
@@ -68,44 +69,49 @@ const Api = provider => {
         };
         contract[method.name] = call(true, "0x0");
         if (!method.constant) {
-          contract[method.name+"$"] = (value, ...params) => call(true, value)(...params);
-          contract.broadcast[method.name+"$"] = (value, ...params) => call(false, value)(...params);
-          contract.broadcast[method.name] = call(false, "0x0");
+          contract[method.name+"_pay"] = value => (...params) => call(true, value)(...params);
+          contract[method.name+"_pay_txid"] = value => (...params) => call(false, value)(...params);
+          contract[method.name+"_txid"] = call(false, "0x0");
         }
       }
     });
     return contract;
   }
 
-  const solidityCodeAndAbi = source =>
-    compileSolidity(source)
-      .then(comp => ({
-        code: comp.code,
-        abi: comp.info.abiDefinition
-      }));
-
-  const solidityContract = (from, source, at) =>
-    solidityCodeAndAbi(source)
-      .then(({abi}) => contract(from, at, abi));
-
-  const deployCode_ = (from, code) =>
+  // Address, Bytecode -> Txid
+  const deployBytecode_txid = (from, code) =>
     sendTransactionWithDefaults({from: from, data: code});
 
-  const deployCode = (from, code) =>
-    deplyoCode_(from,code)
+  // Address, Bytecode -> Receipt
+  const deployBytecode = (from, code) =>
+    deployBytecode_txid(from,code)
       .then(waitTransactionReceipt);
 
-  const deploySolidity_ = (from, source) =>
-    solidityCodeAndAbi(source)
-      .then(({code}) => deployCode_(from, code));
+  // Address, Bytecode, AbiDefinition
+  const deployBytecodeContract = (from, code, abiDefinition) =>
+    deployBytecode(from, code)
+      .then(receipt => contract(from, receipt.contractAddress, abiDefinition));
+      
+  // Address, String, Address -> Contract
+  const solidityContract = (from, source, at) =>
+    compileSolidity(source)
+      .then(({info:{abiDefinition}}) => contract(from, at, abiDefinition));
 
+  // Address, String -> Txid
+  const deploySolidity_txid = (from, source) =>
+    compileSolidity(source)
+      .then(({code}) => deployBytecode_txid(from, code));
+
+  // Address, String -> Receipt
   const deploySolidity = (from, source) =>
-    deploySolidity_(from, source)
+    deploySolidity_txid(from, source)
       .then(waitTransactionReceipt);
 
+  // Address, String -> Contract
   const deploySolidityContract = (from, source) =>
-    deploySolidity(from, source)
-      .then(receipt => contract(from, receipt.contractAddress, abi));
+    compileSolidity(source)
+      .then(({code, info:{abiDefinition}}) =>
+        deployBytecodeContract(from, code, abiDefinition));
 
   return {
     send,
@@ -123,12 +129,15 @@ const Api = provider => {
     sendTransactionWithDefaults,
     callWithDefaults,
     callMethodData,
+
     contract,
-    solidityCodeAndAbi,
+    deployBytecode_txid,
+    deployBytecode,
+    deployBytecodeContract,
+
+    compileSolidity,
     solidityContract,
-    deployCode_,
-    deployCode,
-    deploySolidity_,
+    deploySolidity_txid,
     deploySolidity,
     deploySolidityContract
   }
