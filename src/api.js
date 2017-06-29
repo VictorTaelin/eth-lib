@@ -73,21 +73,21 @@ const Api = provider => {
         contract[method.name] = call(true, "0x0");
         if (!method.constant) {
           contract[method.name+"_pay"] = value => (...params) => call(true, value)(...params);
-          contract[method.name+"_pay_txid"] = value => (...params) => call(false, value)(...params);
-          contract[method.name+"_txid"] = call(false, "0x0");
+          contract[method.name+"_pay_txHash"] = value => (...params) => call(false, value)(...params);
+          contract[method.name+"_txHash"] = call(false, "0x0");
         }
       }
     });
     return contract;
   }
 
-  // Address, Bytecode -> Txid
-  const deployBytecode_txid = (from, code) =>
+  // Address, Bytecode -> TxHash
+  const deployBytecode_txHash = (from, code) =>
     sendTransactionWithDefaults({from: from, data: code, to: ""});
 
   // Address, Bytecode -> Receipt
   const deployBytecode = (from, code) =>
-    deployBytecode_txid(from,code)
+    deployBytecode_txHash(from,code)
       .then(waitTransactionReceipt);
 
   // Address, Bytecode, ContractInterface
@@ -100,14 +100,14 @@ const Api = provider => {
     compileSolidity(source)
       .then(({info:{abiDefinition}}) => contract(from, at, abiDefinition));
 
-  // Address, String -> Txid
-  const deploySolidity_txid = (from, source) =>
+  // Address, String -> TxHash
+  const deploySolidity_txHash = (from, source) =>
     compileSolidity(source)
-      .then(({code}) => deployBytecode_txid(from, code));
+      .then(({code}) => deployBytecode_txHash(from, code));
 
   // Address, String -> Receipt
   const deploySolidity = (from, source) =>
-    deploySolidity_txid(from, source)
+    deploySolidity_txHash(from, source)
       .then(waitTransactionReceipt);
 
   // Address, String -> Contract
@@ -134,13 +134,13 @@ const Api = provider => {
     callMethodData,
 
     contract,
-    deployBytecode_txid,
+    deployBytecode_txHash,
     deployBytecode,
     deployBytecodeContract,
 
     compileSolidity,
     solidityContract,
-    deploySolidity_txid,
+    deploySolidity_txHash,
     deploySolidity,
     deploySolidityContract
   }
