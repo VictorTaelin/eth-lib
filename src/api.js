@@ -26,7 +26,7 @@ const Api = provider => {
       tx.value || "0x0",
       tx.data || "0x"])
     .then(([chainId, gasPrice, nonce, value, data]) =>
-      Map.merge(tx)({chainId: "0x"+chainId, gasPrice, nonce, value, data}))
+      Map.merge(tx)({chainId: Nat.fromNumber(chainId), gasPrice, nonce, value, data}))
     .then(tx =>
       send("eth_estimateGas")(tx)
         .then(usedGas => Map.merge(tx)({
@@ -80,7 +80,7 @@ const Api = provider => {
 
   // Address, Bytecode -> Txid
   const deployBytecode_txid = (from, code) =>
-    sendTransactionWithDefaults({from: from, data: code});
+    sendTransactionWithDefaults({from: from, data: code, to: "0x"});
 
   // Address, Bytecode -> Receipt
   const deployBytecode = (from, code) =>

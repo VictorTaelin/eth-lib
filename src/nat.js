@@ -24,7 +24,7 @@ const toString = a =>
   toBN(a).toString(10);
 
 const fromNumber = a =>
-  "0x" + new BN(a).toString("hex");
+  typeof a === "string" ? a : "0x" + new BN(a).toString("hex");
 
 const toNumber = a =>
   toBN(a).toNumber();
