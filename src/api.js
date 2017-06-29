@@ -16,6 +16,9 @@ const Api = provider => {
   const getBalance = send("eth_getBalance");
   const accounts = send("eth_accounts");
 
+  const removeEmptyTo = tx =>
+    tx.to === "" || tx.to === "0x" ? Map.remove("to")(tx) : tx;
+
   const waitTransactionReceipt = getTransactionReceipt; // TODO: implement correctly
 
   const addTransactionDefaults = tx =>
@@ -27,23 +30,19 @@ const Api = provider => {
       tx.data || "0x"])
     .then(([chainId, gasPrice, nonce, value, data]) =>
       Map.merge(tx)({chainId: Nat.fromNumber(chainId), gasPrice, nonce, value, data}))
-    .then(tx => {
-      // Geth complains if "to" is "0x" (why)
-      const gethFriendlyTx = tx.to === "" || tx.to === "0x" ? Map.remove("to", tx) : tx;
-      return send("eth_estimateGas")(gethFriendlyTx)
-        .then(usedGas => Map.merge(tx)({
-          gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x6"),"0x5"),
-          gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
-        }))
-    });
+    .then(tx => send("eth_estimateGas")(removeEmptyTo(tx))
+      .then(usedGas => Map.merge(tx)({
+        gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x6"),"0x5"),
+        gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
+      })));
 
   const sendTransactionWithDefaults = tx =>
     addTransactionDefaults(tx)
-      .then(sendTransaction);
+      .then(tx => sendTransaction(removeEmptyTo(tx)));
 
   const callWithDefaults = (tx, block) =>
     addTransactionDefaults(tx)
-      .then(tx => call(tx, block || "latest"));
+      .then(tx => call(removeEmptyTo(tx), block || "latest"));
 
   const callMethodData = method => (...params) => {
     const methodSig = method.name + "(" + method.inputs.map(i => i.type).join(",") + ")";
