@@ -1,6 +1,8 @@
 const njsp = require("nano-json-stream-parser");
 
 const EthereumProvider = (url, intercept) => {
+  intercept = intercept || () => {};
+
   let api = {};
   let onResponse = {}; 
   let callbacks = {};
