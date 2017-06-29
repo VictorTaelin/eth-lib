@@ -27,12 +27,15 @@ const Api = provider => {
       tx.data || "0x"])
     .then(([chainId, gasPrice, nonce, value, data]) =>
       Map.merge(tx)({chainId: Nat.fromNumber(chainId), gasPrice, nonce, value, data}))
-    .then(tx =>
-      send("eth_estimateGas")(tx)
+    .then(tx => {
+      // Geth complains if "to" is "0x" (why)
+      const gethFriendlyTx = tx.to === "" || tx.to === "0x" ? Map.remove("to", tx) : tx;
+      return send("eth_estimateGas")(gethFriendlyTx)
         .then(usedGas => Map.merge(tx)({
           gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x30"),"0x5"),
           gas: Nat.div(Nat.mul(usedGas,"0x30"),"0x5")
-        })))
+        }))
+    });
 
   const sendTransactionWithDefaults = tx =>
     addTransactionDefaults(tx)
@@ -80,7 +83,7 @@ const Api = provider => {
 
   // Address, Bytecode -> Txid
   const deployBytecode_txid = (from, code) =>
-    sendTransactionWithDefaults({from: from, data: code, to: "0x"});
+    sendTransactionWithDefaults({from: from, data: code, to: ""});
 
   // Address, Bytecode -> Receipt
   const deployBytecode = (from, code) =>
