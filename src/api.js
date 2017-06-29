@@ -50,12 +50,12 @@ const Api = provider => {
   }
 
   // Address, Address, ContractInterface -> Contract
-  const contract = (from, address, interface) => {
+  const contract = (from, address, contractInterface) => {
     let contract = {};
     contract._address = address;
     contract._from = from;
     contract.broadcast = {};
-    interface.forEach(method => {
+    contractInterface.forEach(method => {
       if (method && method.name) {
         const call = (waitReceipt, value) => (...params) => {
           const transaction = {
@@ -90,9 +90,9 @@ const Api = provider => {
       .then(waitTransactionReceipt);
 
   // Address, Bytecode, ContractInterface
-  const deployBytecodeContract = (from, code, interface) =>
+  const deployBytecodeContract = (from, code, contractInterface) =>
     deployBytecode(from, code)
-      .then(receipt => contract(from, receipt.contractAddress, interface));
+      .then(receipt => contract(from, receipt.contractAddress, contractInterface));
       
   // Address, String, Address -> Contract
   const solidityContract = (from, source, at) =>
@@ -121,7 +121,6 @@ const Api = provider => {
     sendTransaction,
     sendRawTransaction,
     getTransactionReceipt,
-    compileSolidity,
     call,
     getBalance,
     accounts,

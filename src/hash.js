@@ -34,7 +34,6 @@ const RC = [
 
 const Keccak = (bits) => ({
   blocks: [],
-  s: [],
   reset: true,
   block: 0,
   start: 0,
