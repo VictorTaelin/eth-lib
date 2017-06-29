@@ -1,4 +1,5 @@
 const njsp = require("nano-json-stream-parser");
+const rw = require("reqwest");
 
 const EthereumProvider = (url, intercept) => {
   intercept = intercept || (() => {});
@@ -39,7 +40,7 @@ const EthereumProvider = (url, intercept) => {
   }
 
   if (/^ws/.test(url)) {
-    const WebSocket = require("ws");
+    const WebSocket = require("w"+"s");
     const ws = new WebSocket(url);
     api.send = makeSender((method, params, callback) => {
       const intercepted = intercept(method, params, P(send(() => {})));
@@ -56,7 +57,6 @@ const EthereumProvider = (url, intercept) => {
     ws.on("close", () => callbacks.disconnect && callbacks.disconnect());
     
   } else if (/^http/.test(url)) {
-    const rw = require("reqwest");
     api.send = makeSender((method, params, callback) => {
       rw({
         url: url,
