@@ -47,13 +47,13 @@ const Api = provider => {
     return Bytes.concat(keccak256s(methodSig).slice(0,10), Bytes.flatten(params));
   }
 
-  // Address, Address, AbiDefinition -> Contract
-  const contract = (from, address, abiDefinition) => {
+  // Address, Address, ContractInterface -> Contract
+  const contract = (from, address, interface) => {
     let contract = {};
     contract._address = address;
     contract._from = from;
     contract.broadcast = {};
-    abiDefinition.forEach(method => {
+    interface.forEach(method => {
       if (method && method.name) {
         const call = (waitReceipt, value) => (...params) => {
           const transaction = {
@@ -87,10 +87,10 @@ const Api = provider => {
     deployBytecode_txid(from,code)
       .then(waitTransactionReceipt);
 
-  // Address, Bytecode, AbiDefinition
-  const deployBytecodeContract = (from, code, abiDefinition) =>
+  // Address, Bytecode, ContractInterface
+  const deployBytecodeContract = (from, code, interface) =>
     deployBytecode(from, code)
-      .then(receipt => contract(from, receipt.contractAddress, abiDefinition));
+      .then(receipt => contract(from, receipt.contractAddress, interface));
       
   // Address, String, Address -> Contract
   const solidityContract = (from, source, at) =>

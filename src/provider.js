@@ -1,10 +1,25 @@
 const njsp = require("nano-json-stream-parser");
 
-const EthereumProvider = url => {
+const EthereumProvider = (url, intercept) => {
   let api = {};
   let onResponse = {}; 
   let callbacks = {};
   let nextId = 0;
+  let send;
+
+  const makeSender = send => {
+    const P = fn => (...args) => new Promise((resolve, reject) =>
+      fn(...args.concat((err,res) => err ? reject(err) : resolve(res))));
+    const sender = intercept => (method, params, callback) => {
+      const intercepted = intercept(method, params, P(sender(() => {})));
+      if (intercepted) {
+        intercepted.then(response => callback(null, response));
+      } else {
+        send(method, params, callback);
+      }
+    }
+    return sender(intercept);
+  };
 
   const parseResponse = njsp(json => {
     onResponse[json.id] && onResponse[json.id](null, json.result);
@@ -22,21 +37,25 @@ const EthereumProvider = url => {
   }
 
   if (/^ws/.test(url)) {
-    const WebSocket = require("w"+"s");
+    const WebSocket = require("ws");
     const ws = new WebSocket(url);
-    api.send = (method, params, callback) => {
-      const payload = genPayload(method, params);
-      onResponse[payload.id] = callback;
-      ws.send(JSON.stringify(payload));
-    }
+    api.send = makeSender((method, params, callback) => {
+      const intercepted = intercept(method, params, P(send(() => {})));
+      if (intercepted) {
+        intercepted.then(response => callback(null, response));
+      } else {
+        const payload = genPayload(method, params);
+        onResponse[payload.id] = callback;
+        ws.send(JSON.stringify(payload));
+      }
+    });
     ws.on("message", parseResponse);
     ws.on("open", () => callbacks.connect && callbacks.connect(eth));
     ws.on("close", () => callbacks.disconnect && callbacks.disconnect());
     
   } else if (/^http/.test(url)) {
     const rw = require("reqwest");
-
-    api.send = (method, params, callback) => {
+    api.send = makeSender((method, params, callback) => {
       rw({
         url: url,
         method: "post",
@@ -50,7 +69,7 @@ const EthereumProvider = url => {
           }
         })
         .catch(err => callback("Couldn't connect to Ethereum node."));
-    }
+    });
 
     setTimeout(() => {
       callbacks.connect && callbacks.connect();
