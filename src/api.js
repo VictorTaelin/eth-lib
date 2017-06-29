@@ -32,8 +32,8 @@ const Api = provider => {
       const gethFriendlyTx = tx.to === "" || tx.to === "0x" ? Map.remove("to", tx) : tx;
       return send("eth_estimateGas")(gethFriendlyTx)
         .then(usedGas => Map.merge(tx)({
-          gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x30"),"0x5"),
-          gas: Nat.div(Nat.mul(usedGas,"0x30"),"0x5")
+          gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x6"),"0x5"),
+          gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
         }))
     });
 
