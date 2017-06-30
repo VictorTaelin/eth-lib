@@ -46,6 +46,9 @@ const toAscii = hex => {
 const toNumber = hex => 
   parseInt(hex.slice(2), 16);
 
+const length = a =>
+  (a.length - 2) / 2;
+
 const concat = (a, b) =>
   a.concat(b.slice(2));
 
@@ -66,6 +69,7 @@ const toNat = bn =>
 
 module.exports = {
   random,
+  length,
   concat,
   flatten,
   slice,
