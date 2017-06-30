@@ -56,7 +56,7 @@ const flatten = (a) =>
   "0x" + a.reduce((r,s) => r + s.slice(2), "");
 
 const slice = (i,j,bs) =>
-  "0x" + bs.slice(i+2,j+2);
+  "0x" + bs.slice(i*2+2,j*2+2);
 
 const pad = (l,hex) =>
   hex.length === l*2+2 ? hex : pad(l,"0x"+"0"+hex.slice(2));

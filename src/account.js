@@ -38,7 +38,7 @@ const encodeSignature = ([v, r, s]) =>
   Bytes.flatten([r,s,v]);
 
 const decodeSignature = (hex) =>
-  [Bytes.slice(128,130,hex), Bytes.slice(0,64,hex), Bytes.slice(64,128,hex)];
+  [Bytes.slice(64,65,hex), Bytes.slice(0,32,hex), Bytes.slice(32,64,hex)];
 
 const makeSign = addToV => (hash, privateKey) => {
   const signature = secp256k1
