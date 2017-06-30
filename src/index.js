@@ -6,5 +6,6 @@ module.exports = {
   RLP: require("./rlp.js"),
   Api: require("./api.js"),
   Provider: require("./provider.js"),
-  Sunseed: require("./sunseed.js")
+  Desubits: require("./desubits.js"),
+  Passphrase: require("./passphrase.js")
 }
