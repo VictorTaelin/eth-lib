@@ -61,6 +61,11 @@ const slice = (i,j,bs) =>
 const pad = (l,hex) =>
   hex.length === l*2+2 ? hex : pad(l,"0x"+"0"+hex.slice(2));
 
+const padRight = (l,hex) =>
+  hex.length === l*2+2 ? hex : padRight(l,hex+"0");
+
+console.log(padRight(32, "0x123456"));
+
 const fromNat = bn =>
   bn === "0x0" ? "0x" : bn.length % 2 === 0 ? bn : "0x0" + bn.slice(2);
 
@@ -74,6 +79,7 @@ module.exports = {
   flatten,
   slice,
   pad,
+  padRight,
   fromAscii,
   toAscii,
   fromNumber,

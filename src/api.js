@@ -8,6 +8,22 @@ const Api = provider => {
       provider.send(method, params, (err, result) =>
         err ? reject(err) : resolve(result)));
 
+  // TODO check inputs
+  // TODO move to proper file
+  const encodeABI = (type, value) => {
+    if (type === "bytes") {
+      const length = Bytes.length(value);
+      const nextMul32 = (((length - 1) / 32 | 0) + 1) * 32;
+      const lengthEncoded = encodeABI("uint256", Nat.fromNumber(length));
+      const bytesEncoded = Bytes.padRight(nextMul32, value);
+      return Bytes.concat(lengthEncoded, bytesEncoded);
+    } else if (type === "uint256") {
+      return Bytes.pad(32, value);
+    } else {
+      throw "Eth-lib can't encode ABI type " + type + " yet.";
+    }
+  }
+
   const sendTransaction = send("eth_sendTransaction");
   const sendRawTransaction = send("eth_sendRawTransaction");
   const getTransactionReceipt = send("eth_getTransactionReceipt");
@@ -46,7 +62,9 @@ const Api = provider => {
 
   const callMethodData = method => (...params) => {
     const methodSig = method.name + "(" + method.inputs.map(i => i.type).join(",") + ")";
-    return Bytes.concat(keccak256s(methodSig).slice(0,10), Bytes.flatten(params));
+    const methodHash = keccak256s(methodSig).slice(0,10);
+    const encodedParams = params.map((param,i) => encodeABI(method.inputs[i].type, param));
+    return Bytes.concat(methodHash, Bytes.flatten(encodedParams));
   }
 
   // Address, Address, ContractInterface -> Contract
@@ -57,23 +75,26 @@ const Api = provider => {
     contract.broadcast = {};
     contractInterface.forEach(method => {
       if (method && method.name) {
-        const call = (waitReceipt, value) => (...params) => {
+        const call = (type, value) => (...params) => {
           const transaction = {
             from: from,
             to: address,
             value: value,
-            data: callMethodData(method)(...params.map(p => Bytes.pad(32,p)))
+            data: callMethodData(method)(...params)
           };
-          return method.constant
-            ? callWithDefaults(transaction)
-            : sendTransactionWithDefaults(transaction)
-              .then(waitReceipt ? waitTransactionReceipt : (x => x));
+          return type === "data"
+            ? Promise.resolve(transaction)
+            : method.constant
+              ? callWithDefaults(transaction)
+              : sendTransactionWithDefaults(transaction)
+                .then(type === "receipt" ? waitTransactionReceipt : (x => x));
         };
-        contract[method.name] = call(true, "0x0");
+        contract[method.name] = call("receipt", "0x0");
         if (!method.constant) {
-          contract[method.name+"_pay"] = value => (...params) => call(true, value)(...params);
-          contract[method.name+"_pay_txHash"] = value => (...params) => call(false, value)(...params);
-          contract[method.name+"_txHash"] = call(false, "0x0");
+          contract[method.name+"_data"] = call("data", "0x0");
+          contract[method.name+"_pay"] = value => (...params) => call("receipt", value)(...params);
+          contract[method.name+"_pay_txHash"] = value => (...params) => call("txHash", value)(...params);
+          contract[method.name+"_txHash"] = call("txHash", "0x0");
         }
       }
     });
