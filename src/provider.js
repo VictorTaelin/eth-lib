@@ -1,5 +1,5 @@
 const njsp = require("nano-json-stream-parser");
-const rw = require("reqwest");
+const request = require("xhr-request-promise");
 
 const EthereumProvider = (url, intercept) => {
   intercept = intercept || (() => {});
@@ -58,12 +58,12 @@ const EthereumProvider = (url, intercept) => {
     
   } else if (/^http/.test(url)) {
     api.send = makeSender((method, params, callback) => {
-      rw({
-        url: url,
-        method: "post",
+      request(url, {
+        method: "POST",
         contentType: "application/json-rpc",
-        data: JSON.stringify(genPayload(method,params))})
-        .then(resp => {
+        body: JSON.stringify(genPayload(method,params))})
+        .then(answer => {
+          var resp = JSON.parse(answer);
           if (resp.error) {
             callback(resp.error.message);
           } else {
