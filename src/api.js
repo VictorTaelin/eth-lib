@@ -14,11 +14,11 @@ const Api = provider => {
     if (type === "bytes") {
       const length = Bytes.length(value);
       const nextMul32 = (((length - 1) / 32 | 0) + 1) * 32;
-      const lengthEncoded = encodeABI("uint256", Nat.fromNumber(length));
+      const lengthEncoded = encodeABI("uint256", Nat.fromNumber(length)).data;
       const bytesEncoded = Bytes.padRight(nextMul32, value);
-      return Bytes.concat(lengthEncoded, bytesEncoded);
+      return {data: Bytes.concat(lengthEncoded, bytesEncoded), dynamic: true};
     } else if (type === "uint256") {
-      return Bytes.pad(32, value);
+      return {data: Bytes.pad(32, value), dynamic: false};
     } else {
       throw "Eth-lib can't encode ABI type " + type + " yet.";
     }
@@ -63,8 +63,19 @@ const Api = provider => {
   const callMethodData = method => (...params) => {
     const methodSig = method.name + "(" + method.inputs.map(i => i.type).join(",") + ")";
     const methodHash = keccak256s(methodSig).slice(0,10);
-    const encodedParams = params.map((param,i) => encodeABI(method.inputs[i].type, param));
-    return Bytes.concat(methodHash, Bytes.flatten(encodedParams));
+    let encodedParams = params.map((param,i) => encodeABI(method.inputs[i].type, param));
+    var headBlock = "0x";
+    let dataBlock = "0x";
+    for (var i = 0; i < encodedParams.length; ++i) {
+      if (encodedParams[i].dynamic) {
+        var dataLoc = encodedParams.length * 32 + Bytes.length(dataBlock);
+        headBlock = Bytes.concat(headBlock, Bytes.pad(32, Nat.fromNumber(dataLoc)));
+        dataBlock = Bytes.concat(dataBlock, encodedParams[i].data);
+      } else {
+        headBlock = Bytes.concat(headBlock, encodedParams[i].data);
+      }
+    }
+    return Bytes.flatten([methodHash, headBlock, dataBlock]);
   }
 
   // Address, Address, ContractInterface -> Contract
