@@ -17,7 +17,7 @@ const Api = provider => {
       const lengthEncoded = encodeABI("uint256", Nat.fromNumber(length)).data;
       const bytesEncoded = Bytes.padRight(nextMul32, value);
       return {data: Bytes.concat(lengthEncoded, bytesEncoded), dynamic: true};
-    } else if (type === "uint256") {
+    } else if (type === "uint256" || type === "bytes32") {
       return {data: Bytes.pad(32, value), dynamic: false};
     } else {
       throw "Eth-lib can't encode ABI type " + type + " yet.";
