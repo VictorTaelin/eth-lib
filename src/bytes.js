@@ -26,7 +26,7 @@ const fromArray = arr =>
 
 const fromNumber = num => {
   let hex = num.toString(16);
-  return hex.length % 2 === 0 ? "0x" + hex : "0x0" + hex ;
+  return hex.length % 2 === 0 ? "0x" + hex : "0x0" + hex ;
 };
 
 const fromAscii = ascii => {
@@ -65,7 +65,7 @@ const padRight = (l,hex) =>
   hex.length === l*2+2 ? hex : padRight(l,hex+"0");
 
 const fromNat = bn =>
-  bn === "0x0" ? "0x" : bn.length % 2 === 0 ? bn : "0x0" + bn.slice(2);
+  bn === "0x0" ? "0x" : bn.length % 2 === 0 ? bn : "0x0" + bn.slice(2);
 
 const toNat = bn =>
   bn[2] === "0" ? "0x" + bn.slice(3) : bn;

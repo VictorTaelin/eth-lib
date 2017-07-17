@@ -10,7 +10,7 @@
 
 const encode = tree => {
   const padEven = str =>
-    str.length % 2 === 0 ? str : "0" + str;
+    str.length % 2 === 0 ? str : "0" + str;
 
   const uint = num =>
     padEven(num.toString(16))
@@ -21,7 +21,7 @@ const encode = tree => {
   const dataTree = tree => {
     if (typeof tree === "string") {
       const hex = tree.slice(2);
-      const pre = hex.length != 2 || hex >= "80" ? length(hex.length / 2, 128) : "";
+      const pre = hex.length != 2 || hex >= "80" ? length(hex.length / 2, 128) : "";
       return pre + hex;
     } else {
       const hex = tree.map(dataTree).join("");

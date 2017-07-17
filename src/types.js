@@ -5,7 +5,7 @@ const Account = require("./account");
 
 F.Bytes = F(F.Type, {
   form: "a JavaScript String starting with a `0x`, followed by an even number of low-case hex chars (i.e., `0123456789abcdef`)",
-  rand: () => "0x" + A.generate((Math.random() * 16 | 0) * 2, () => (Math.random() * 16 | 0).toString(16)).join(""),
+  rand: () => "0x" + A.generate((Math.random() * 16 | 0) * 2, () => (Math.random() * 16 | 0).toString(16)).join(""),
   test: value => typeof value === "string" && /^0x([0-9a-f][0-9a-f])*$/.test(value),
 }).__name("Bytes").__desc("any arbitrary data");
 
@@ -15,7 +15,7 @@ F.NBytes = bytes => F(F.Type, {
   rand: () => "0x" + A.generate(bytes * 2, () => (Math.random() * 16 | 0).toString(16)).join("")
 })
 .__name("NBytes(" + bytes + ")")
-.__desc("any arbitrary data of exactly " + bytes + "-byte" + (bytes > 1 ? "s" : ""));
+.__desc("any arbitrary data of exactly " + bytes + "-byte" + (bytes > 1 ? "s" : ""));
 
 F.Nat = F(F.Type, {
   form: "a JavaScript String starting with a `0x`, followed by at least one low-case hex char different from 0, followed by any number of low-case hex chars (i.e., `0123456789abcdef`)",

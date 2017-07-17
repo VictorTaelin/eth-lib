@@ -55,7 +55,7 @@ const sign = makeSign(27); // v=27|28 instead of 0|1...
 const recover = (hash, signature) => {
   const vals = decodeSignature(signature);
   const vrs = {v: Bytes.toNumber(vals[0]), r:vals[1].slice(2), s:vals[2].slice(2)};
-  const ecPublicKey = secp256k1.recoverPubKey(new Buffer(hash.slice(2), "hex"), vrs, vrs.v < 2 ? vrs.v : 1 - (vrs.v % 2)); // because odd vals mean v=0... sadly that means v=0 means v=1... I hate that
+  const ecPublicKey = secp256k1.recoverPubKey(new Buffer(hash.slice(2), "hex"), vrs, vrs.v < 2 ? vrs.v : 1 - (vrs.v % 2)); // because odd vals mean v=0... sadly that means v=0 means v=1... I hate that
   const publicKey = "0x" + ecPublicKey.encode("hex", false).slice(2);
   const publicHash = keccak256(publicKey);
   const address = toChecksum("0x" + publicHash.slice(-40));
@@ -76,7 +76,7 @@ const transactionSigningData = tx =>
 
 const signTransaction = (tx, privateKey) => {
   const signingData = transactionSigningData(tx);
-  const signature = makeSign(Nat.toNumber(tx.chainId || "0x1") * 2 + 35)(keccak256(signingData), privateKey);
+  const signature = makeSign(Nat.toNumber(tx.chainId || "0x1") * 2 + 35)(keccak256(signingData), privateKey);
   const rawTransaction = rlp.decode(signingData).slice(0,6).concat(decodeSignature(signature));
   return rlp.encode(rawTransaction);
 }
