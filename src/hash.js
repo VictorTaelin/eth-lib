@@ -50,7 +50,8 @@ const update = (state, message) => {
     outputBlocks = state.outputBlocks,
     s = state.s,
     index = 0,
-    i;
+    i,
+    code;
 
   // update
   while (index < length) {
