@@ -58,6 +58,14 @@ const flatten = (a) =>
 const slice = (i,j,bs) =>
   "0x" + bs.slice(i*2+2,j*2+2);
 
+const reverse = hex => {
+  let rev = "0x";
+  for (let i = 0, l = length(hex); i < l; ++i) {
+    rev += hex.slice((l-i)*2, (l-i+1)*2);
+  }
+  return rev;
+}
+
 const pad = (l,hex) =>
   hex.length === l*2+2 ? hex : pad(l,"0x"+"0"+hex.slice(2));
 
@@ -76,6 +84,7 @@ module.exports = {
   concat,
   flatten,
   slice,
+  reverse,
   pad,
   padRight,
   fromAscii,

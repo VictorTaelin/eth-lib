@@ -1,4 +1,4 @@
-## EthFP
+## Eth-Lib
 
 Lightweight Ethereum libraries with strong emphasis in simplicity, efficiency, type consistency, purity and absolute modularity. It is heavily inspired by, and in many parts ported from [EthJS](https://github.com/ethjs), with some tweaks to: 
 
