@@ -38,19 +38,35 @@ const Api = provider => {
   const waitTransactionReceipt = getTransactionReceipt; // TODO: implement correctly
 
   const addTransactionDefaults = tx =>
+    // Get basic defaults
     Promise.all([
       tx.chainId || send("net_version")(),
       tx.gasPrice || send("eth_gasPrice")(),
       tx.nonce || send("eth_getTransactionCount")(tx.from,"latest"),
       tx.value || "0x0",
       tx.data || "0x"])
-    .then(([chainId, gasPrice, nonce, value, data]) =>
-      Map.merge(tx)({chainId: Nat.fromNumber(chainId), gasPrice, nonce, value, data}))
-    .then(tx => send("eth_estimateGas")(removeEmptyTo(tx))
-      .then(usedGas => Map.merge(tx)({
-        gasPrice: Nat.div(Nat.mul(tx.gasPrice,"0x6"),"0x5"),
-        gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")
-      })));
+    // Add them to tx
+    .then(([chainId, gasPrice, nonce, value, data]) => {
+      return Map.merge(tx)({chainId: Nat.fromNumber(chainId), gasPrice, nonce, value, data});
+    })
+    .then(tx => {
+      // Add gas default by estimating
+      if (!tx.gas) {
+        let estimateTx = {};
+        estimateTx.from = tx.from;
+        if (tx.to !== "" && tx.to !== "0x")
+          estimateTx.to = tx.to;
+        estimateTx.value = tx.value;
+        estimateTx.nonce = tx.nonce;
+        estimateTx.data = tx.data;
+        return send("eth_estimateGas")(estimateTx)
+          .then(usedGas => {
+            return Map.merge(tx)({gas: Nat.div(Nat.mul(usedGas,"0x6"),"0x5")});
+          });
+      } else {
+        return Promise.resolve(tx);
+      }
+    });
 
   const sendTransactionWithDefaults = tx =>
     addTransactionDefaults(tx)
