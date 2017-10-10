@@ -37,15 +37,17 @@ const fromPrivate = privateKey => {
 const encodeSignature = ([v, r, s]) =>
   Bytes.flatten([r,s,v]);
 
-const decodeSignature = (hex) =>
-  [Bytes.slice(64,65,hex), Bytes.slice(0,32,hex), Bytes.slice(32,64,hex)];
+const decodeSignature = (hex) => [ 
+  Bytes.slice(64, Bytes.length(hex), hex),
+  Bytes.slice(0, 32, hex),
+  Bytes.slice(32, 64, hex)];
 
 const makeSigner = addToV => (hash, privateKey) => {
   const signature = secp256k1
     .keyFromPrivate(new Buffer(privateKey.slice(2), "hex"))
     .sign(new Buffer(hash.slice(2), "hex"), {canonical: true});
   return encodeSignature([
-    Bytes.pad(1, Bytes.fromNumber(addToV + signature.recoveryParam)),
+    Nat.fromString(Bytes.fromNumber(addToV + signature.recoveryParam)),
     Bytes.pad(32, Bytes.fromNat("0x" + signature.r.toString(16))),
     Bytes.pad(32, Bytes.fromNat("0x" + signature.s.toString(16)))]);
 }
