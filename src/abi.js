@@ -12,6 +12,7 @@
 // }
 
 const Bytes = require("./bytes");
+const Nat = require("./nat");
 const keccak256s = require("./hash").keccak256s;
 
 // (type : String), JSType(type) -> {data: Bytes, dynamic: Bool}
@@ -20,7 +21,7 @@ const encode = (type, value) => {
   if (type === "bytes") {
     const length = Bytes.length(value);
     const nextMul32 = (((length - 1) / 32 | 0) + 1) * 32;
-    const lengthEncoded = encodeABI("uint256", Nat.fromNumber(length)).data;
+    const lengthEncoded = encode("uint256", Nat.fromNumber(length)).data;
     const bytesEncoded = Bytes.padRight(nextMul32, value);
     return {data: Bytes.concat(lengthEncoded, bytesEncoded), dynamic: true};
   } else if (type === "uint256" || type === "bytes32" || type === "address") {
