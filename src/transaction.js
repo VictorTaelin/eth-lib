@@ -5,7 +5,7 @@ const RLP = require("./rlp");
 const keccak256 = require("./hash").keccak256;
 
 // EthereumRPC, IncompleteTransaction -> Promise Transaction
-const addDefaults = async (rpc, tx) => {
+const addDefaults = (rpc, tx) => {
   var baseDefaults = [
     tx.chainId || rpc("net_version", []),
     tx.gasPrice || rpc("eth_gasPrice", []),
@@ -13,32 +13,32 @@ const addDefaults = async (rpc, tx) => {
     tx.value || "0x0",
     tx.data || "0x"
   ];
-
-  var [chainIdNum, gasPrice, nonce, value, data] = await Promise.all(baseDefaults);
-
-  var chainId = Nat.fromNumber(chainIdNum);
-  var from = tx.from;
-  var to = tx.to === "" || tx.to === "0x" ? null : tx.to;
-  var gas = tx.gas
-    ? tx.gas
-    : Nat.div(Nat.mul(await rpc("eth_estimateGas", [{
+  return Promise.all(baseDefaults).then(([chainIdNum, gasPrice, nonce, value, data]) => {
+    var chainId = Nat.fromNumber(chainIdNum);
+    var from = tx.from;
+    var to = tx.to === "" || tx.to === "0x" ? null : tx.to;
+    var gasEstimator = tx.gas
+      ? Promise.resolve(null)
+      : rpc("eth_estimateGas", [{
         from: tx.from,
         to: tx.to,
         value: tx.value,
         nonce: tx.nonce,
         data: tx.data
-      }]), "0x6"), "0x5");
-
-  return {
-    chainId: chainId,
-    from: from ? from.toLowerCase() : null,
-    to: to ? to.toLowerCase() : null,
-    gasPrice: gasPrice,
-    gas: gas,
-    nonce: nonce,
-    value: value,
-    data: data ? data.toLowerCase() : null
-  }
+      }]);
+    return gasEstimator.then(gasEstimate => {
+      return {
+        chainId: chainId,
+        from: from ? from.toLowerCase() : null,
+        to: to ? to.toLowerCase() : null,
+        gasPrice: gasPrice,
+        gas: tx.gas ? tx.gas : Nat.div(Nat.mul(gasEstimate, "0x6"), "0x5"),
+        nonce: nonce,
+        value: value,
+        data: data ? data.toLowerCase() : null
+      }
+    });
+  });
 };
 
 // Transaction -> Bytes
