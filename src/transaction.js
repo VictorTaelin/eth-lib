@@ -13,24 +13,26 @@ const addDefaults = (rpc, tx) => {
     tx.value || "0x0",
     tx.data || "0x"
   ];
+  const noAddress = address => !address || address === "" || address === "0x";
   return Promise.all(baseDefaults).then(([chainIdNum, gasPrice, nonce, value, data]) => {
     var chainId = Nat.fromNumber(chainIdNum);
-    var from = tx.from;
-    var to = tx.to === "" || tx.to === "0x" ? null : tx.to;
     var gasEstimator = tx.gas
       ? Promise.resolve(null)
       : rpc("eth_estimateGas", [{
-        from: tx.from,
-        to: tx.to,
+        from: noAddress(tx.from) ? null : tx.from,
+        to: noAddress(tx.to) ? null : tx.to,
         value: tx.value,
         nonce: tx.nonce,
         data: tx.data
       }]);
     return gasEstimator.then(gasEstimate => {
+      if (gasEstimate.error) {
+        throw gasEstimate.error;
+      }
       return {
         chainId: chainId,
-        from: from ? from.toLowerCase() : null,
-        to: to ? to.toLowerCase() : null,
+        from: noAddress(tx.from) ? "0x" : tx.from.toLowerCase(),
+        to: noAddress(tx.to) ? "0x" : to.toLowerCase(),
         gasPrice: gasPrice,
         gas: tx.gas ? tx.gas : Nat.div(Nat.mul(gasEstimate, "0x6"), "0x5"),
         nonce: nonce,
