@@ -6,7 +6,7 @@
 // | 128 to 183 | HEX(length_of_leaf + 128) + HEX(leaf)                                      |
 // | 184 to 191 | HEX(length_of_length_of_leaf + 128 + 55) + HEX(length_of_leaf) + HEX(leaf) |
 // | 192 to 247 | HEX(length_of_node + 192) + HEX(node)                                      |
-// | 248 to 255 | HEX(length_of_length_of_node + 128 + 55) + HEX(length_of_node) + HEX(node) |
+// | 248 to 255 | HEX(length_of_length_of_node + 192 + 55) + HEX(length_of_node) + HEX(node) |
 
 const encode = tree => {
   const padEven = str =>
