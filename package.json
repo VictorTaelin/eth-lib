@@ -1,6 +1,6 @@
 {
   "name": "eth-lib",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "Lightweight Ethereum libraries",
   "main": "lib/index.js",
   "scripts": {
@@ -31,7 +31,6 @@
   "dependencies": {
     "bn.js": "^4.11.6",
     "elliptic": "^6.4.0",
-    "keccakjs": "^0.2.1",
     "nano-json-stream-parser": "^0.1.2",
     "servify": "^0.1.12",
     "ws": "^3.0.0",
