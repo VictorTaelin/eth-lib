@@ -1,6 +1,6 @@
 {
   "name": "eth-lib",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "Lightweight Ethereum libraries",
   "main": "lib/index.js",
   "scripts": {
