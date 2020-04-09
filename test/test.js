@@ -52,6 +52,13 @@ describe("account", function () {
     }, 128);
   });
 
+  it("must generate the same public key", () => {
+    const prv = "0x4646464646464646464646464646464646464646464646464646464646464646";
+    const pk1 = Account.fromPrivate(prv);
+    const pk2 = Account.fromPrivate(prv.slice(2));
+    assert(pk1.address === pk2.address);
+  })
+
   it("must match expected values for complex pre-determined tests", () => {
     const accounts = [
       {
