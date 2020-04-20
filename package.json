@@ -3,6 +3,7 @@
   "version": "0.2.8",
   "description": "Lightweight Ethereum libraries",
   "main": "lib/index.js",
+  "browser": "lib/browser.js",
   "scripts": {
     "build": "babel src --out-dir=lib",
     "test": "mocha test/test.js"
