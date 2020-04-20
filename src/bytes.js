@@ -8,7 +8,7 @@ const random = bytes => {
   if (typeof window !== "undefined" && window.crypto && window.crypto.getRandomValues)
     rnd = window.crypto.getRandomValues(new Uint8Array(bytes));
   else if (typeof require !== "undefined")
-    rnd = require("c" + "rypto").randomBytes(bytes);
+    rnd = require("crypto").randomBytes(bytes);
   else
     throw "Safe random numbers not available.";
   let hex = "0x";
@@ -67,7 +67,7 @@ const fromNumber = num => {
   return hex.length % 2 === 0 ? "0x" + hex : "0x0" + hex ;
 };
 
-const toNumber = hex => 
+const toNumber = hex =>
   parseInt(hex.slice(2), 16);
 
 const concat = (a, b) =>
